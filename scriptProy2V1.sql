@@ -1,21 +1,19 @@
-#TABLAS
-
 CREATE TABLE Torneo (
 	idTorneo integer PRIMARY KEY NOT NULL,
 	pais VARCHAR(60) NOT NULL
 );
 
 CREATE DOMAIN fecha AS VARCHAR(2) CHECK (
-	VALUE ~ '\<[Q] + [1-4]\>'
+	VALUE ~ '\<[Q] + [1-4] + [" "] + [1000-3000]\>'
 );
 
 CREATE TABLE InstanciaTorneo (
 	fechaTermino fecha NOT NULL,
 	ciudad VARCHAR(60) NOT NULL,
-	fechaInicio fecha NOT NULL,
+	fechaInicio fecha PRIMARY KEY NOT NULL,
 	refTorneo integer,
 	FOREIGN KEY(refTorneo) REFERENCES Torneo(idTorneo)
-	ON DELETE SET DEFAULT '-1' 
+	ON DELETE SET DEFAULT
 	ON UPDATE CASCADE
 );
 
@@ -69,7 +67,7 @@ CREATE TABLE Arbitro(
 	nroPasaporteArbitro integer PRIMARY KEY NOT NULL,
 	nombreArbitro VARCHAR(100) NOT NULL,
 	fecnacArbitro DATE NOT NULL,
-	expArbitro INTEGER NOT NULL,
+	expArbitro INTEGER NOT NULL
 );
 
 CREATE TABLE ParticipaPartido (
@@ -185,7 +183,7 @@ CREATE TABLE Arbitra(
 	idArbitra integer PRIMARY KEY NOT NULL,
 	refArbitro integer, 
 	refPartido integer,
-	rol INTEGER DEFAULT 'linea',
+	rol VARCHAR(10) DEFAULT 'linea',
 	FOREIGN KEY(refArbitro) REFERENCES Arbitro(nroPasaporteArbitro)
 	ON DELETE SET NULL 
 	ON UPDATE CASCADE,
@@ -193,9 +191,6 @@ CREATE TABLE Arbitra(
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE
 );
-
-
-#TRIGGER
 
 CREATE OR REPLACE FUNCTION evitar_tenista_menor_de_edad() 
 RETURNS trigger AS
@@ -213,6 +208,3 @@ CREATE TRIGGER trigger_tenista_menor_de_edad
 	BEFORE INSERT ON tenista
 	FOR EACH ROW 
 		EXECUTE PROCEDURE evitar_tenista_menor_de_edad();
-
-#PRUEBA DEL TRIGGER:
-INSERT INTO tenista VALUES(00011, 'Jose Marquez Aravena', '2022-06-05', 1230, 1.74, 'Chileno')
