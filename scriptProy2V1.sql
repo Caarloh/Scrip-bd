@@ -5,23 +5,28 @@ CREATE TABLE Torneo (
 	pais VARCHAR(60) NOT NULL
 );
 
+CREATE DOMAIN fecha AS VARCHAR(2) CHECK (
+	VALUE ~ '\<[Q] + [1-4]\>'
+);
+
 CREATE TABLE InstanciaTorneo (
-	fechaTermino VARCHAR (60) NOT NULL,
+	fechaTermino fecha NOT NULL,
 	ciudad VARCHAR(60) NOT NULL,
-	fechaInicio VARCHAR(60) PRIMARY KEY NOT NULL,
+	fechaInicio fecha NOT NULL,
 	refTorneo integer,
 	FOREIGN KEY(refTorneo) REFERENCES Torneo(idTorneo)
-	ON DELETE RESTRICT 
+	ON DELETE SET DEFAULT '-1' 
 	ON UPDATE CASCADE
 );
 
 CREATE TABLE Tenista (
-	nroPasaporteTenista integer PRIMARY KEY NOT NULL,
+	nroPasaporteTenista integer PRIMARY KEY,
 	nombreTenista VARCHAR(100) NOT NULL,
 	fecnacTenista DATE NOT NULL,
 	ranking integer NOT NULL,
 	estatura float NOT NULL,
-	nacionalidad VARCHAR(60)NOT NULL
+	nacionalidad VARCHAR(60)NOT NULL,
+	CONSTRAINT mayorEdad CHECK (fecnacTenista > '2004-12-31')
 );
 
 CREATE TABLE Partido(
@@ -34,7 +39,7 @@ CREATE TABLE Partido(
 );
 
 CREATE TABLE SetPartido (
-	idSet integer PRIMARY KEY NOT NULL,
+	idSet integer UNIQUE NOT NULL,
 	nSet integer NOT NULL,
 	refPartido integer,
 	FOREIGN KEY(refPartido) REFERENCES Partido(idPartido)
@@ -43,7 +48,7 @@ CREATE TABLE SetPartido (
 );
 
 CREATE TABLE Juego(
-	idJuego integer PRIMARY KEY NOT NULL,
+	idJuego integer UNIQUE NOT NULL,
 	njuego integer NOT NULL,
 	refSet integer,
 	FOREIGN KEY(refSet) REFERENCES SetPartido(idSet)
@@ -65,30 +70,18 @@ CREATE TABLE Arbitro(
 	nombreArbitro VARCHAR(100) NOT NULL,
 	fecnacArbitro DATE NOT NULL,
 	expArbitro INTEGER NOT NULL,
-	rol INTEGER NOT NULL
 );
 
 CREATE TABLE ParticipaPartido (
 	idParticipaPartido integer PRIMARY KEY NOT NULL,
 	refPartido integer,
-	tenista1Equipo1 integer,
-	tenista1Equipo2 integer,
-	tenista2Equipo1 integer,
-	tenista2Equipo2 integer,
+	equipo integer,
+	tenista integer,
 	FOREIGN KEY(refPartido) REFERENCES Partido(idPartido)
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
-	FOREIGN KEY(tenista1Equipo1) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
-	ON UPDATE CASCADE,
-    FOREIGN KEY(tenista1Equipo2) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
-	ON UPDATE CASCADE,
-    FOREIGN KEY(tenista2Equipo1) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
-	ON UPDATE CASCADE,
-    FOREIGN KEY(tenista2Equipo2) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	FOREIGN KEY(tenista) REFERENCES Tenista(nroPasaporteTenista)
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -100,7 +93,7 @@ CREATE TABLE GanaPartido (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -112,7 +105,7 @@ CREATE TABLE PierdePartido (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -124,7 +117,7 @@ CREATE TABLE ParticipaSet (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -136,7 +129,7 @@ CREATE TABLE GanaSet (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -148,7 +141,7 @@ CREATE TABLE PierdeSet (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -160,7 +153,7 @@ CREATE TABLE ParticipaJuego (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -172,7 +165,7 @@ CREATE TABLE GanaJuego (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -184,7 +177,7 @@ CREATE TABLE PierdeJuego (
 	ON DELETE RESTRICT 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refTenista) REFERENCES Tenista(nroPasaporteTenista)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL
 	ON UPDATE CASCADE
 );
 
@@ -192,8 +185,9 @@ CREATE TABLE Arbitra(
 	idArbitra integer PRIMARY KEY NOT NULL,
 	refArbitro integer, 
 	refPartido integer,
+	rol INTEGER DEFAULT 'linea',
 	FOREIGN KEY(refArbitro) REFERENCES Arbitro(nroPasaporteArbitro)
-	ON DELETE RESTRICT 
+	ON DELETE SET NULL 
 	ON UPDATE CASCADE,
 	FOREIGN KEY(refPartido) REFERENCES Partido(idPartido)
 	ON DELETE RESTRICT 
